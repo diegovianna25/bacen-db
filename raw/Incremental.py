@@ -6,6 +6,8 @@ import datetime
 import pandas as pd
 from pyspark.sql import SparkSession
 
+# COMMAND ----------
+
 def baixar_dados_cotas_mes_anterior():
     formato = "json"
     ano_atual = datetime.datetime.now().year
