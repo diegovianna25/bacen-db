@@ -1,12 +1,4 @@
 # Databricks notebook source
-dbutils.fs.ls("/mnt/datalake")
-
-# COMMAND ----------
-
-dbutils.fs.mkdirs("/mnt/datalake/bronze")
-
-# COMMAND ----------
-
 from pyspark.sql import functions as F
 from pyspark.sql import window
 from pyspark.sql.types import *
@@ -14,28 +6,22 @@ from delta.tables import *
 
 # COMMAND ----------
 
-df = spark.read.format("json").load("/mnt/datalake/raw")
+#Lê o dataframe na camada raw/bronze
+#df = spark.read.format("json").load("/mnt/datalake/raw")
 
 # COMMAND ----------
 
-df.display()
+#df.display()
 
 # COMMAND ----------
 
-df.schema
+#df.schema
 
 # COMMAND ----------
 
-df = spark.read.format("json").load("/mnt/datalake/raw/")
-
-# COMMAND ----------
-
-# MAGIC %sql 
-# MAGIC create schema bronze_cotas location "/mnt/datalake/bronze"
-
-# COMMAND ----------
-
-df.write.mode("overwrite").format("delta").saveAsTable("bronze_cotas.bronze")
+#Grava os dados da camada raw/bronze na tabela criada no db da camada silver
+#df.write.mode("overwrite").format("delta").saveAsTable("silver_cotas.dep_data_history")
+#df.write.format("delta").save("/mnt/datalake/silver/silver_cotas.dep_data_history")
 
 # COMMAND ----------
 
@@ -74,22 +60,22 @@ StructField("valorLiquido", StringType(), True)])
 
 # COMMAND ----------
 
-# MAGIC %sqlCONVERT TO DELTA bronze_cotas.dep_data_history;
+#%sql CONVERT TO DELTA silver_cotas.dep_data_history;
 
 # COMMAND ----------
 
-bronzeDeltaTable = DeltaTable.forPath(spark, "/mnt/datalake/bronze/bronze_cotas.dep_data_history")
+silverDeltaTable = DeltaTable.forPath(spark, "/mnt/datalake/silver/silver_cotas.dep_data_history")
 
 # COMMAND ----------
 
-bronzeDeltaTable = DeltaTable.forPath(spark, "/mnt/datalake/bronze/bronze_cotas.dep_data_history")
+#silverDeltaTable = DeltaTable.forPath(spark, "/mnt/datalake/silver/silver_cotas.dep_data_history")
 
 def upsertToDelta(df, batchId):
     windowSpec = window.Window.partitionBy("idDocumento").orderBy("dataEmissao")
     df_new = ( df.withColumn("row_number",F.row_number().over(windowSpec))
                  .filter("row_number = 1"))
 
-    ( bronzeDeltaTable.alias("delta")
+    ( silverDeltaTable.alias("delta")
                       .merge(df_new.alias("raw"), "delta.idDocumento = raw.idDocumento")
                       .whenMatchedUpdateAll()
                       .whenNotMatchedInsertAll()
@@ -103,7 +89,7 @@ df_stream = ( spark.readStream
 
 stream = (df_stream.writeStream
                    .foreachBatch(upsertToDelta)
-                   .option('checkpointLocation', "/mnt/datalake/bronze/dep_data_history_checkpoint")
+                   .option('checkpointLocation', "/mnt/datalake/silver/dep_data_history_checkpoint")
                    .outputMode("update")
                    .start()
           )
