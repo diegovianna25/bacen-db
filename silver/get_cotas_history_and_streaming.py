@@ -60,7 +60,7 @@ StructField("valorLiquido", StringType(), True)])
 
 # COMMAND ----------
 
-#%sql CONVERT TO DELTA silver_cotas.dep_data_history;
+# MAGIC %sql CONVERT TO DELTA gold_cotas.dep_data_gastos_teste;
 
 # COMMAND ----------
 
