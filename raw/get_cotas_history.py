@@ -11,22 +11,6 @@ from pyspark.sql import SparkSession
 
 # COMMAND ----------
 
-#dbutils.fs.ls("mnt")
-
-# COMMAND ----------
-
-#response = requests.get(url)
-
-# COMMAND ----------
-
-#dbutils.fs.mkdirs("/mnt/datalake/raw")
-
-# COMMAND ----------
-
-#dbutils.fs.ls("/mnt/datalake/raw/")
-
-# COMMAND ----------
-
 def baixar_dados_cotas_ano(ano):
     formato = "json"
     url = f"http://www.camara.leg.br/cotas/Ano-{ano}.{formato}.zip"
