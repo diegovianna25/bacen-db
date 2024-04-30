@@ -11,14 +11,6 @@ from delta.tables import *
 
 # COMMAND ----------
 
-#df.display()
-
-# COMMAND ----------
-
-#df.schema
-
-# COMMAND ----------
-
 #Grava os dados da camada raw/bronze na tabela criada no db da camada silver
 #df.write.mode("overwrite").format("delta").saveAsTable("silver_cotas.dep_data_history")
 #df.write.format("delta").save("/mnt/datalake/silver/silver_cotas.dep_data_history")
@@ -93,12 +85,3 @@ stream = (df_stream.writeStream
                    .outputMode("update")
                    .start()
           )
-
-# COMMAND ----------
-
-df_stream = ( spark.readStream
-                   .format('cloudFiles')
-                   .option('cloudFiles.format', 'json')
-                   .option('header','true')
-                   .schema(stream_schema)
-                   .load("/mnt/datalake/raw/") )
